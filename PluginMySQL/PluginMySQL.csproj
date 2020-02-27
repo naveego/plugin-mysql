@@ -13,9 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="API\Replication" />
       <Folder Include="API\Write" />
-      <Folder Include="DataContracts" />
     </ItemGroup>
 
     <ItemGroup>
