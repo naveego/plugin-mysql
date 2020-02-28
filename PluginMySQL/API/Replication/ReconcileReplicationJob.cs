@@ -27,7 +27,7 @@ namespace PluginMySQL.API.Replication
 
             // get previous metadata
             Logger.Info($"Getting previous metadata job: {request.DataVersions.JobId}");
-            var previousMetadata = await GetPreviousReplicationMetadata(clusterFactory, request.DataVersions.JobId);
+            var previousMetadata = await GetPreviousReplicationMetadata(connFactory, request);
             Logger.Info($"Got previous metadata job: {request.DataVersions.JobId}");
 
             // create current metadata
