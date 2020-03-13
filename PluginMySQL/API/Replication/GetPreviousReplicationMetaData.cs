@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.VisualBasic;
 using Naveego.Sdk.Plugins;
+using Newtonsoft.Json;
 using PluginMySQL.API.Factory;
 using PluginMySQL.DataContracts;
 using PluginMySQL.Helper;
@@ -12,27 +11,45 @@ namespace PluginMySQL.API.Replication
 {
     public static partial class Replication
     {
-        public static async Task<ReplicationMetaData> GetPreviousReplicationMetadata(IConnectionFactory connFactory,
-            PrepareWriteRequest request)
+        private static readonly string GetMetaDatQuery = $@"SELECT * FROM @schema.@table 
+WHERE {Constants.ReplicationMetaDataJobId} = @jobId";
+
+        public static async Task<ReplicationMetaData> GetPreviousReplicationMetaData(IConnectionFactory connFactory,
+            ReplicationTable metaDataTable)
         {
             try
             {
-                // ensure replication metadata table
+                ReplicationMetaData replicationMetaData = null;
 
+                // ensure replication metadata table
+                await EnsureTableAsync(connFactory, metaDataTable);
 
                 // check if metadata exists
-                if (!await bucket.ExistsAsync(jobId))
+                var conn = connFactory.GetConnection();
+                await conn.OpenAsync();
+
+                var cmd = connFactory.GetCommand(GetMetaDatQuery, conn);
+                var reader = await cmd.ExecuteReaderAsync();
+
+                if (reader.HasRows())
                 {
-                    // no metadata
-                    return null;
+                    // metadata exists
+                    replicationMetaData = new ReplicationMetaData
+                    {
+                        Request = JsonConvert.DeserializeObject<PrepareWriteRequest>(
+                            reader.GetValueById(Constants.ReplicationMetaDataRequest).ToString()),
+                        ReplicatedShapeName = reader.GetValueById(Constants.ReplicationMetaDataReplicatedShapeName)
+                            .ToString(),
+                        ReplicatedShapeId = reader.GetValueById(Constants.ReplicationMetaDataReplicatedShapeId)
+                            .ToString(),
+                        Timestamp = DateTime.Parse(reader.GetValueById(Constants.ReplicationMetaDataTimestamp)
+                            .ToString())
+                    };
                 }
-
-                // metadata exists
-
 
                 await conn.CloseAsync();
 
-                return result.Value;
+                return replicationMetaData;
             }
             catch (Exception e)
             {
@@ -40,42 +57,5 @@ namespace PluginMySQL.API.Replication
                 throw;
             }
         }
-
-        private static ReplicationTable ReplicationMetaDataTable = new ReplicationTable
-        {
-            TableName = Constants.ReplicationMetaDataTableName,
-            Columns = new List<ReplicationColumn>
-            {
-                new ReplicationColumn
-                {
-                    ColumnName = "`JobID`",
-                    DataType = "",
-                    PrimaryKey = false
-                },
-                new ReplicationColumn
-                {
-                    ColumnName = "",
-                    DataType = "",
-                    PrimaryKey = false
-                },
-                new ReplicationColumn
-                {
-                    ColumnName = "",
-                    DataType = "",
-                    PrimaryKey = false
-                },
-                new ReplicationColumn
-                {
-                    ColumnName = "",
-                    DataType = "",
-                    PrimaryKey = false
-                },
-                new ReplicationColumn
-                {
-                    ColumnName = "",
-                    DataType = "",
-                    PrimaryKey = false
-                },
-            }
-        };
     }
+}
