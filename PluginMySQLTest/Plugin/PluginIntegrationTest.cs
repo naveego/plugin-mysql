@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Grpc.Core;
 using Naveego.Sdk.Plugins;
 using Newtonsoft.Json;
+using PluginMySQL.DataContracts;
 using PluginMySQL.Helper;
 using Xunit;
 using Record = Naveego.Sdk.Plugins.Record;
@@ -42,7 +43,23 @@ namespace PluginMySQLTest.Plugin
             {
                 Id = id,
                 Name = name,
-                Query = query
+                Query = query,
+                Properties =
+                {
+                    new Property
+                    {
+                        Id = "Id",
+                        Name = "Id",
+                        Type = PropertyType.String,
+                        IsKey = true
+                    },
+                    new Property
+                    {
+                        Id = "Name",
+                        Name = "Name",
+                        Type = PropertyType.String
+                    }
+                }
             };
         }
 
@@ -464,6 +481,58 @@ namespace PluginMySQLTest.Plugin
 
             // assert
             Assert.Equal(10, records.Count);
+
+            // cleanup
+            await channel.ShutdownAsync();
+            await server.ShutdownAsync();
+        }
+        
+        [Fact]
+        public async Task PrepareWriteTest()
+        {
+            // setup
+            Server server = new Server
+            {
+                Services = {Publisher.BindService(new PluginMySQL.Plugin.Plugin())},
+                Ports = {new ServerPort("localhost", 0, ServerCredentials.Insecure)}
+            };
+            server.Start();
+
+            var port = server.Ports.First().BoundPort;
+
+            var channel = new Channel($"localhost:{port}", ChannelCredentials.Insecure);
+            var client = new Publisher.PublisherClient(channel);
+
+            var connectRequest = GetConnectSettings();
+
+            var request = new PrepareWriteRequest()
+            {
+                Schema = GetTestSchema(),
+                CommitSlaSeconds = 1,
+                Replication = new ReplicationWriteRequest
+                {
+                    SettingsJson = JsonConvert.SerializeObject(new ConfigureReplicationFormData
+                    {
+                        SchemaName = "test",
+                        GoldenTableName = "gr_test",
+                        VersionTableName = "vr_test"
+                    })
+                },
+                DataVersions = new DataVersions
+                {
+                    JobId = "jobUnitTest",
+                    ShapeId = "shapeUnitTest",
+                    JobDataVersion = 1,
+                    ShapeDataVersion = 1
+                }
+            };
+
+            // act
+            client.Connect(connectRequest);
+            var response = client.PrepareWrite(request);
+
+            // assert
+            Assert.IsType<PrepareWriteResponse>(response);
 
             // cleanup
             await channel.ShutdownAsync();

@@ -24,6 +24,8 @@ namespace PluginMySQL.API.Replication
                     DataType = string.IsNullOrWhiteSpace(property.TypeAtSource)? GetType(property.Type): property.TypeAtSource,
                     PrimaryKey = false
                 };
+                
+                table.Columns.Add(column);
             }
 
             return table;
@@ -50,11 +52,11 @@ namespace PluginMySQL.API.Replication
                 case PropertyType.Blob:
                     return "longblob";
                 case PropertyType.String:
-                    return "varchar(65535)";
+                    return "varchar(1024)";
                 case PropertyType.Text:
                     return "longtext";
                 default:
-                    return "varchar(65535)";
+                    return "longtext";
             }
         }
     }

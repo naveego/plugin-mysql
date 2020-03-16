@@ -14,7 +14,7 @@ namespace PluginMySQL.API.Replication
             var conn = connFactory.GetConnection();
             await conn.OpenAsync();
 
-            var cmd = connFactory.GetCommand(EnsureQuery, conn);
+            var cmd = connFactory.GetCommand(DropTableQuery, conn);
             cmd.AddParameter("@schema", table.SchemaName);
             cmd.AddParameter("@table", table.TableName);
 

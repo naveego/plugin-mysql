@@ -329,45 +329,45 @@ namespace PluginMySQL.Plugin
         public override async Task WriteStream(IAsyncStreamReader<Record> requestStream,
             IServerStreamWriter<RecordAck> responseStream, ServerCallContext context)
         {
-            // try
-            // {
-            //     Logger.Info("Writing records to MySQL...");
-            //
-            //     var schema = _server.WriteSettings.Schema;
-            //     var inCount = 0;
-            //     var config =
-            //         JsonConvert.DeserializeObject<ConfigureReplicationFormData>(_server.WriteSettings.Replication
-            //             .SettingsJson);
-            //
-            //     // get next record to publish while connected and configured
-            //     while (await requestStream.MoveNext(context.CancellationToken) && _server.Connected &&
-            //            _server.WriteConfigured)
-            //     {
-            //         var record = requestStream.Current;
-            //         inCount++;
-            //
-            //         Logger.Debug($"Got record: {record.DataJson}");
-            //
-            //         if (_server.WriteSettings.IsReplication())
-            //         {
-            //             
-            //             // send record to source system
-            //             // timeout if it takes longer than the sla
-            //             Task.Run(async () => await Replication.WriteRecord(_connectionFactory, schema, record, config, responseStream), context.CancellationToken);
-            //         }
-            //         else
-            //         {
-            //             throw new Exception("Only replication writebacks are supported");
-            //         }
-            //     }
-            //
-            //     Logger.Info($"Wrote {inCount} records to MySQL.");
-            // }
-            // catch (Exception e)
-            // {
-            //     Logger.Error(e.Message);
-            //     throw;
-            // }
+            try
+            {
+                Logger.Info("Writing records to MySQL...");
+            
+                var schema = _server.WriteSettings.Schema;
+                var inCount = 0;
+                var config =
+                    JsonConvert.DeserializeObject<ConfigureReplicationFormData>(_server.WriteSettings.Replication
+                        .SettingsJson);
+            
+                // get next record to publish while connected and configured
+                while (await requestStream.MoveNext(context.CancellationToken) && _server.Connected &&
+                       _server.WriteConfigured)
+                {
+                    var record = requestStream.Current;
+                    inCount++;
+            
+                    Logger.Debug($"Got record: {record.DataJson}");
+            
+                    if (_server.WriteSettings.IsReplication())
+                    {
+                        
+                        // send record to source system
+                        // timeout if it takes longer than the sla
+                        Task.Run(async () => await Replication.WriteRecord(_connectionFactory, schema, record, config, responseStream), context.CancellationToken);
+                    }
+                    else
+                    {
+                        throw new Exception("Only replication writebacks are supported");
+                    }
+                }
+            
+                Logger.Info($"Wrote {inCount} records to MySQL.");
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+                throw;
+            }
         }
 
         /// <summary>

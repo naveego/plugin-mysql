@@ -11,39 +11,52 @@ namespace PluginMySQL.API.Replication
 {
     public static partial class Replication
     {
-        private static readonly string GetMetaDatQuery = $@"SELECT * FROM @schema.@table 
-WHERE {Constants.ReplicationMetaDataJobId} = @jobId";
+        private static readonly string GetMetaDataQuery = @"SELECT * FROM {0}.{1} WHERE {2} = '{3}'";
 
         public static async Task<ReplicationMetaData> GetPreviousReplicationMetaData(IConnectionFactory connFactory,
-            ReplicationTable metaDataTable)
+            string jobId,
+            ReplicationTable table)
         {
             try
             {
                 ReplicationMetaData replicationMetaData = null;
 
                 // ensure replication metadata table
-                await EnsureTableAsync(connFactory, metaDataTable);
+                await EnsureTableAsync(connFactory, table);
 
                 // check if metadata exists
                 var conn = connFactory.GetConnection();
                 await conn.OpenAsync();
 
-                var cmd = connFactory.GetCommand(GetMetaDatQuery, conn);
+                var cmd = connFactory.GetCommand(
+                    string.Format(GetMetaDataQuery, 
+                        Utility.Utility.GetSafeName(table.SchemaName, '`'),
+                        Utility.Utility.GetSafeName(table.TableName, '`'), 
+                        Utility.Utility.GetSafeName(Constants.ReplicationMetaDataJobId),
+                        jobId),
+                    conn);
                 var reader = await cmd.ExecuteReaderAsync();
 
                 if (reader.HasRows())
                 {
                     // metadata exists
+                    await reader.ReadAsync();
+
+                    var request = JsonConvert.DeserializeObject<PrepareWriteRequest>(
+                        reader.GetValueById(Constants.ReplicationMetaDataRequest).ToString());
+                    var shapeName = reader.GetValueById(Constants.ReplicationMetaDataReplicatedShapeName)
+                        .ToString();
+                    var shapeId = reader.GetValueById(Constants.ReplicationMetaDataReplicatedShapeId)
+                        .ToString();
+                    var timestamp = DateTime.Parse(reader.GetValueById(Constants.ReplicationMetaDataTimestamp)
+                        .ToString());
+                    
                     replicationMetaData = new ReplicationMetaData
                     {
-                        Request = JsonConvert.DeserializeObject<PrepareWriteRequest>(
-                            reader.GetValueById(Constants.ReplicationMetaDataRequest).ToString()),
-                        ReplicatedShapeName = reader.GetValueById(Constants.ReplicationMetaDataReplicatedShapeName)
-                            .ToString(),
-                        ReplicatedShapeId = reader.GetValueById(Constants.ReplicationMetaDataReplicatedShapeId)
-                            .ToString(),
-                        Timestamp = DateTime.Parse(reader.GetValueById(Constants.ReplicationMetaDataTimestamp)
-                            .ToString())
+                        Request = request,
+                        ReplicatedShapeName = shapeName,
+                        ReplicatedShapeId = shapeId,
+                        Timestamp = timestamp
                     };
                 }
 

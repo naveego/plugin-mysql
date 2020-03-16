@@ -24,16 +24,16 @@ namespace PluginMySQL.API.Replication
             // get request settings 
             var replicationSettings =
                 JsonConvert.DeserializeObject<ConfigureReplicationFormData>(request.Replication.SettingsJson);
-            var safeSchemaName = Utility.Utility.GetSafeName(replicationSettings.SchemaName, '`');
+            var safeSchemaName = replicationSettings.SchemaName;
             var safeGoldenTableName =
-                Utility.Utility.GetSafeName(replicationSettings.GoldenTableName, '`');
+                replicationSettings.GoldenTableName;
             var safeVersionTableName =
-                Utility.Utility.GetSafeName(replicationSettings.VersionTableName, '`');
+                replicationSettings.VersionTableName;
 
             var metaDataTable = new ReplicationTable
             {
                 SchemaName = safeSchemaName,
-                TableName = Utility.Utility.GetSafeName(Constants.ReplicationMetaDataTableName),
+                TableName = Constants.ReplicationMetaDataTableName,
                 Columns = Constants.ReplicationMetaDataColumns
             };
             
@@ -44,19 +44,25 @@ namespace PluginMySQL.API.Replication
                 DataType = "varchar(255)",
                 PrimaryKey = true
             });
+            goldenTable.Columns.Add(new ReplicationColumn
+            {
+                ColumnName = Constants.ReplicationVersionIds,
+                DataType = "longtext",
+                PrimaryKey = false
+            });
 
             var versionTable = ConvertSchemaToReplicationTable(request.Schema, safeSchemaName, safeVersionTableName);
-            versionTable.Columns.Add(new ReplicationColumn
-            {
-                ColumnName = Constants.ReplicationRecordId,
-                DataType = "varchar(255)",
-                PrimaryKey = true
-            });
             versionTable.Columns.Add(new ReplicationColumn
             {
                 ColumnName = Constants.ReplicationVersionRecordId,
                 DataType = "varchar(255)",
                 PrimaryKey = true
+            });
+            versionTable.Columns.Add(new ReplicationColumn
+            {
+                ColumnName = Constants.ReplicationRecordId,
+                DataType = "varchar(255)",
+                PrimaryKey = false
             });
 
             Logger.Info(
@@ -64,7 +70,7 @@ namespace PluginMySQL.API.Replication
 
             // get previous metadata
             Logger.Info($"Getting previous metadata job: {request.DataVersions.JobId}");
-            var previousMetaData = await GetPreviousReplicationMetaData(connFactory, metaDataTable);
+            var previousMetaData = await GetPreviousReplicationMetaData(connFactory, request.DataVersions.JobId, metaDataTable);
             Logger.Info($"Got previous metadata job: {request.DataVersions.JobId}");
 
             // create current metadata

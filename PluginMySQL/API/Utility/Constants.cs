@@ -6,6 +6,7 @@ namespace PluginMySQL.API.Utility
     public static class Constants
     {
         public static string ReplicationRecordId = "NaveegoReplicationRecordId";
+        public static string ReplicationVersionIds = "NaveegoVersionIds";
         public static string ReplicationVersionRecordId = "NaveegoReplicationVersionRecordId";
         
         public static string ReplicationMetaDataTableName = "NaveegoReplicationMetaData";
@@ -44,7 +45,7 @@ namespace PluginMySQL.API.Utility
             new ReplicationColumn
             {
                 ColumnName = ReplicationMetaDataTimestamp,
-                DataType = "timestamp",
+                DataType = "varchar(255)",
                 PrimaryKey = false
             }
         };
