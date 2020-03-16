@@ -13,7 +13,7 @@ namespace PluginMySQL.API.Replication
     {
         private static readonly string GetMetaDataQuery = @"SELECT * FROM {0}.{1} WHERE {2} = '{3}'";
 
-        public static async Task<ReplicationMetaData> GetPreviousReplicationMetaData(IConnectionFactory connFactory,
+        public static async Task<ReplicationMetaData> GetPreviousReplicationMetaDataAsync(IConnectionFactory connFactory,
             string jobId,
             ReplicationTable table)
         {

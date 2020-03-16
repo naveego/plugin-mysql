@@ -308,7 +308,7 @@ namespace PluginMySQL.Plugin
             {
                 // reconcile job
                 Logger.Info($"Starting to reconcile Replication Job {request.DataVersions.JobId}");
-                await Replication.ReconcileReplicationJob(_connectionFactory, request);
+                await Replication.ReconcileReplicationJobAsync(_connectionFactory, request);
                 Logger.Info($"Finished reconciling Replication Job {request.DataVersions.JobId}");
             }
             
@@ -352,7 +352,8 @@ namespace PluginMySQL.Plugin
                     {
                         
                         // send record to source system
-                        // timeout if it takes longer than the sla
+                        // add await for unit testing 
+                        // removed to allow multiple to run at the same time
                         Task.Run(async () => await Replication.WriteRecord(_connectionFactory, schema, record, config, responseStream), context.CancellationToken);
                     }
                     else

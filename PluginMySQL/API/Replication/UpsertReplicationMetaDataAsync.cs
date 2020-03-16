@@ -33,7 +33,7 @@ SET
 , {Constants.ReplicationMetaDataTimestamp} = '{{5}}'
 WHERE {Constants.ReplicationMetaDataJobId} = '{{6}}'";
         
-        public static async Task UpsertReplicationMetaData(IConnectionFactory connFactory, ReplicationTable table, ReplicationMetaData metaData)
+        public static async Task UpsertReplicationMetaDataAsync(IConnectionFactory connFactory, ReplicationTable table, ReplicationMetaData metaData)
         {
             var conn = connFactory.GetConnection();
             await conn.OpenAsync();

@@ -19,7 +19,7 @@ namespace PluginMySQL.API.Replication
         private const string JobDataVersionChange = "Job data version changed";
         private const string ShapeDataVersionChange = "Shape data version changed";
         
-        public static async Task ReconcileReplicationJob(IConnectionFactory connFactory, PrepareWriteRequest request)
+        public static async Task ReconcileReplicationJobAsync(IConnectionFactory connFactory, PrepareWriteRequest request)
         {
             // get request settings 
             var replicationSettings =
@@ -36,41 +36,16 @@ namespace PluginMySQL.API.Replication
                 TableName = Constants.ReplicationMetaDataTableName,
                 Columns = Constants.ReplicationMetaDataColumns
             };
-            
-            var goldenTable = ConvertSchemaToReplicationTable(request.Schema, safeSchemaName, safeGoldenTableName);
-            goldenTable.Columns.Add(new ReplicationColumn
-            {
-                ColumnName = Constants.ReplicationRecordId,
-                DataType = "varchar(255)",
-                PrimaryKey = true
-            });
-            goldenTable.Columns.Add(new ReplicationColumn
-            {
-                ColumnName = Constants.ReplicationVersionIds,
-                DataType = "longtext",
-                PrimaryKey = false
-            });
 
-            var versionTable = ConvertSchemaToReplicationTable(request.Schema, safeSchemaName, safeVersionTableName);
-            versionTable.Columns.Add(new ReplicationColumn
-            {
-                ColumnName = Constants.ReplicationVersionRecordId,
-                DataType = "varchar(255)",
-                PrimaryKey = true
-            });
-            versionTable.Columns.Add(new ReplicationColumn
-            {
-                ColumnName = Constants.ReplicationRecordId,
-                DataType = "varchar(255)",
-                PrimaryKey = false
-            });
+            var goldenTable = GetGoldenReplicationTable(request.Schema, safeSchemaName, safeGoldenTableName);
+            var versionTable = GetVersionReplicationTable(request.Schema, safeSchemaName, safeVersionTableName);
 
             Logger.Info(
                 $"SchemaName: {safeSchemaName} Golden Table: {safeGoldenTableName} Version Table: {safeVersionTableName} job: {request.DataVersions.JobId}");
 
             // get previous metadata
             Logger.Info($"Getting previous metadata job: {request.DataVersions.JobId}");
-            var previousMetaData = await GetPreviousReplicationMetaData(connFactory, request.DataVersions.JobId, metaDataTable);
+            var previousMetaData = await GetPreviousReplicationMetaDataAsync(connFactory, request.DataVersions.JobId, metaDataTable);
             Logger.Info($"Got previous metadata job: {request.DataVersions.JobId}");
 
             // create current metadata
@@ -183,7 +158,7 @@ namespace PluginMySQL.API.Replication
 
             // save new metadata
             Logger.Info($"Updating metadata job: {request.DataVersions.JobId}");
-            await UpsertReplicationMetaData(connFactory, metaDataTable, metaData);
+            await UpsertReplicationMetaDataAsync(connFactory, metaDataTable, metaData);
             Logger.Info($"Updated metadata job: {request.DataVersions.JobId}");
         }
     }
