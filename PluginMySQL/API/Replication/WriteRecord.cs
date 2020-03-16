@@ -44,7 +44,7 @@ namespace PluginMySQL.API.Replication
                 await ReplicationSemaphoreSlim.WaitAsync();
             
                 // setup
-                var safeSchemaName = schema.Name;
+                var safeSchemaName = config.SchemaName;
                 var safeGoldenTableName = config.GoldenTableName;
                 var safeVersionTableName = config.VersionTableName;
             
