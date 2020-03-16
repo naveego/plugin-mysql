@@ -120,9 +120,9 @@ ORDER BY t.TABLE_NAME";
                 case "smallint":
                 case "mediumint":
                 case "int":
+                case "bigint":
                     return PropertyType.Integer;
                 case "decimal":
-                case "bigint":
                     return PropertyType.Decimal;
                 case "float":
                 case "double":
