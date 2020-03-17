@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Naveego.Sdk.Plugins;
 using PluginMySQL.API.Factory;
 using PluginMySQL.DataContracts;
+using PluginMySQL.Helper;
 
 namespace PluginMySQL.API.Replication
 {
@@ -17,13 +18,19 @@ AND table_name = '{1}'";
 
         public static async Task EnsureTableAsync(IConnectionFactory connFactory, ReplicationTable table)
         {
+
+
             var conn = connFactory.GetConnection();
             await conn.OpenAsync();
             
+            Logger.Info($"Creating Schema... {table.SchemaName}");
+            var cmdText = $"CREATE SCHEMA IF NOT EXISTS {table.SchemaName}";
             var cmd = connFactory.GetCommand($"CREATE SCHEMA IF NOT EXISTS {table.SchemaName}", conn);
             await cmd.ExecuteNonQueryAsync();
 
             cmd = connFactory.GetCommand(string.Format(EnsureTableQuery, table.SchemaName, table.TableName), conn);
+            
+            Logger.Info($"Creating Table: {string.Format(EnsureTableQuery, table.SchemaName, table.TableName)}");
 
             // check if table exists
             var reader = await cmd.ExecuteReaderAsync();
@@ -62,6 +69,7 @@ AND table_name = '{1}'";
                 }
 
                 var query = querySb.ToString();
+                Logger.Info($"Creating Table: {query}");
                 
                 await conn.OpenAsync();
 

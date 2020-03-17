@@ -237,7 +237,7 @@ namespace PluginMySQL.Plugin
             ServerCallContext context)
         {
             Logger.SetLogPrefix("configure_replication");
-            Logger.Info("Configuring write...");
+            Logger.Info($"Configuring write for schema name {request.Schema.Name}...");
             
             var schemaJson = Replication.GetSchemaJson();
             var uiJson = Replication.GetUIJson();
