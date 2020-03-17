@@ -62,10 +62,10 @@ namespace PluginMySQL.API.Replication
             // check if changes are needed
             if (previousMetaData == null)
             {
-                Logger.Info($"No Previous metadata creating buckets job: {request.DataVersions.JobId}");
+                Logger.Info($"No Previous metadata creating tables job: {request.DataVersions.JobId}");
                 await EnsureTableAsync(connFactory, goldenTable);
                 await EnsureTableAsync(connFactory, versionTable);
-                Logger.Info($"Created buckets job: {request.DataVersions.JobId}");
+                Logger.Info($"Created tables job: {request.DataVersions.JobId}");
             }
             else
             {
@@ -104,13 +104,13 @@ namespace PluginMySQL.API.Replication
                     dropVersionReason = SchemaNameChange;
                 }
 
-                // check if golden bucket name changed
+                // check if golden table name changed
                 if (previousReplicationSettings.GoldenTableName != replicationSettings.GoldenTableName)
                 {
                     dropGoldenReason = GoldenNameChange;
                 }
 
-                // check if version bucket name changed
+                // check if version table name changed
                 if (previousReplicationSettings.VersionTableName != replicationSettings.VersionTableName)
                 {
                     dropVersionReason = VersionNameChange;
@@ -131,25 +131,17 @@ namespace PluginMySQL.API.Replication
                     dropVersionReason = ShapeDataVersionChange;
                 }
 
-                // drop previous golden bucket
+                // drop previous golden table
                 if (dropGoldenReason != "")
                 {
-                    var safePreviousSchemaName = Utility.Utility.GetSafeName(previousReplicationSettings.SchemaName, '`');
-                    var safePreviousGoldenBucketName =
-                        Utility.Utility.GetSafeName(previousReplicationSettings.GoldenTableName, '`');
-
                     await DropTableAsync(connFactory, previousGoldenTable);
 
                     await EnsureTableAsync(connFactory, goldenTable);
                 }
 
-                // drop previous version bucket
+                // drop previous version table
                 if (dropVersionReason != "")
                 {
-                    var safePreviousSchemaName = Utility.Utility.GetSafeName(previousReplicationSettings.SchemaName, '`');
-                    var safePreviousGoldenBucketName =
-                        Utility.Utility.GetSafeName(previousReplicationSettings.VersionTableName, '`');
-
                     await DropTableAsync(connFactory, previousVersionTable);
 
                     await EnsureTableAsync(connFactory, versionTable);

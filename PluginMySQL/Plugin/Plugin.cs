@@ -292,6 +292,7 @@ namespace PluginMySQL.Plugin
         /// <returns></returns>
         public override async Task<PrepareWriteResponse> PrepareWrite(PrepareWriteRequest request, ServerCallContext context)
         {
+            Logger.SetLogLevel(Logger.LogLevel.Debug);
             Logger.SetLogPrefix(request.DataVersions.JobId);
             Logger.Info("Preparing write...");
             _server.WriteConfigured = false;
@@ -308,7 +309,16 @@ namespace PluginMySQL.Plugin
             {
                 // reconcile job
                 Logger.Info($"Starting to reconcile Replication Job {request.DataVersions.JobId}");
-                await Replication.ReconcileReplicationJobAsync(_connectionFactory, request);
+                try
+                {
+                    await Replication.ReconcileReplicationJobAsync(_connectionFactory, request);
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e.Message);
+                    throw;
+                }
+                
                 Logger.Info($"Finished reconciling Replication Job {request.DataVersions.JobId}");
             }
             
