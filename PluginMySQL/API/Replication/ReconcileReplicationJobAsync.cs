@@ -134,6 +134,7 @@ namespace PluginMySQL.API.Replication
                 // drop previous golden table
                 if (dropGoldenReason != "")
                 {
+                    Logger.Info($"Dropping golden table: {dropGoldenReason}");
                     await DropTableAsync(connFactory, previousGoldenTable);
 
                     await EnsureTableAsync(connFactory, goldenTable);
@@ -142,6 +143,7 @@ namespace PluginMySQL.API.Replication
                 // drop previous version table
                 if (dropVersionReason != "")
                 {
+                    Logger.Info($"Dropping version table: {dropVersionReason}");
                     await DropTableAsync(connFactory, previousVersionTable);
 
                     await EnsureTableAsync(connFactory, versionTable);
