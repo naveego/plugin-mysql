@@ -7,17 +7,14 @@ namespace PluginMySQL.API.Replication
 {
     public static partial class Replication
     {
-        private static readonly string DropTableQuery = @"DROP TABLE IF EXISTS @schema.@table";
+        private static readonly string DropTableQuery = @"DROP TABLE IF EXISTS";
         
         public static async Task DropTableAsync(IConnectionFactory connFactory, ReplicationTable table)
         {
             var conn = connFactory.GetConnection();
             await conn.OpenAsync();
 
-            var cmd = connFactory.GetCommand(DropTableQuery, conn);
-            cmd.AddParameter("@schema", table.SchemaName);
-            cmd.AddParameter("@table", table.TableName);
-
+            var cmd = connFactory.GetCommand(DropTableQuery + $" `{table.SchemaName}`.`${table.TableName}`", conn);
             await cmd.ExecuteNonQueryAsync();
             
             await conn.CloseAsync();
