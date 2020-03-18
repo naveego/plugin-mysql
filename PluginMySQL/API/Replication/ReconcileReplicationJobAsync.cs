@@ -76,27 +76,9 @@ namespace PluginMySQL.API.Replication
                         .SettingsJson);
                 
                 var previousGoldenTable = ConvertSchemaToReplicationTable(previousMetaData.Request.Schema, previousReplicationSettings.SchemaName, previousReplicationSettings.GoldenTableName);
-                goldenTable.Columns.Add(new ReplicationColumn
-                {
-                    ColumnName = Constants.ReplicationRecordId,
-                    DataType = "varchar(255)",
-                    PrimaryKey = true
-                });
 
                 var previousVersionTable = ConvertSchemaToReplicationTable(previousMetaData.Request.Schema, previousReplicationSettings.SchemaName, previousReplicationSettings.VersionTableName);
-                versionTable.Columns.Add(new ReplicationColumn
-                {
-                    ColumnName = Constants.ReplicationRecordId,
-                    DataType = "varchar(255)",
-                    PrimaryKey = true
-                });
-                versionTable.Columns.Add(new ReplicationColumn
-                {
-                    ColumnName = Constants.ReplicationVersionRecordId,
-                    DataType = "varchar(255)",
-                    PrimaryKey = true
-                });
-                
+
                 // check if schema changed
                 if (previousReplicationSettings.SchemaName != replicationSettings.SchemaName)
                 {
