@@ -45,7 +45,7 @@ namespace PluginMySQL.API.Replication
                     }
                     else
                     {
-                        querySb.Append($"{null},");
+                        querySb.Append($"NULL,");
                     }
                 }
 
