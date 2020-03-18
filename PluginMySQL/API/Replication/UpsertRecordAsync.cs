@@ -83,7 +83,7 @@ namespace PluginMySQL.API.Replication
                             }
                             else
                             {
-                                querySb.Append($"{Utility.Utility.GetSafeName(column.ColumnName, '`')}={null},");
+                                querySb.Append($"{Utility.Utility.GetSafeName(column.ColumnName, '`')}=NULL,");
                             }
                             
                         }
