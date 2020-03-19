@@ -10,7 +10,7 @@
   "kind": "publisher",
   "os": "$GOOS",
   "arch": "$GOARCH",
-  "accessGroups": ["vandelay", "prodsupport", "wyatt", "casey", "katie", "waynedemo"],
+  "accessGroups": [],
   "canProduceMultipleSchemas": true,
   "canAcceptQueryBasedSchemas": false,
   "canUseOAuth": false,
