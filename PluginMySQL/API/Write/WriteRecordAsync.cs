@@ -53,7 +53,7 @@ namespace PluginMySQL.API.Write
                     }
                     else
                     {
-                        querySb.Append($"'{Utility.Utility.GetSafeString(rawValue.ToString())}',");
+                        querySb.Append($"'{Utility.Utility.GetSafeString(Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''"))}',");
                     }
                 }
 
