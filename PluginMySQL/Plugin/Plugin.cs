@@ -11,6 +11,7 @@ using PluginMySQL.API.Discover;
 using PluginMySQL.API.Factory;
 using PluginMySQL.API.Read;
 using PluginMySQL.API.Replication;
+using PluginMySQL.API.Write;
 using PluginMySQL.DataContracts;
 using PluginMySQL.Helper;
 
@@ -226,6 +227,80 @@ namespace PluginMySQL.Plugin
             
             Logger.Info($"Published {recordsCount} records");
         }
+        
+        /// <summary>
+        /// Creates a form and handles form updates for write backs
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public override async Task<ConfigureWriteResponse> ConfigureWrite(ConfigureWriteRequest request,
+            ServerCallContext context)
+        {
+            Logger.Info("Configuring write...");
+
+            var storedProcedures = await Write.GetAllStoredProceduresAsync(_connectionFactory);
+
+            var schemaJson = Write.GetSchemaJson(storedProcedures);
+            var uiJson = Write.GetUIJson();
+
+            // if first call 
+            if (request.Form == null || request.Form.DataJson == "")
+            {
+                return new ConfigureWriteResponse
+                {
+                    Form = new ConfigurationFormResponse
+                    {
+                        DataJson = "",
+                        DataErrorsJson = "",
+                        Errors = { },
+                        SchemaJson = schemaJson,
+                        UiJson = uiJson,
+                        StateJson = ""
+                    },
+                    Schema = null
+                };
+            }
+
+            try
+            {
+                // get form data
+                var formData = JsonConvert.DeserializeObject<ConfigureWriteFormData>(request.Form.DataJson);
+                var storedProcedure = storedProcedures.Find(s => s.GetId() == formData.StoredProcedure);
+
+                // base schema to return
+                var schema = await Write.GetSchemaForStoredProcedureAsync(_connectionFactory, storedProcedure);
+
+                return new ConfigureWriteResponse
+                {
+                    Form = new ConfigurationFormResponse
+                    {
+                        DataJson = request.Form.DataJson,
+                        Errors = { },
+                        SchemaJson = schemaJson,
+                        UiJson = uiJson,
+                        StateJson = request.Form.StateJson
+                    },
+                    Schema = schema
+                };
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+                return new ConfigureWriteResponse
+                {
+                    Form = new ConfigurationFormResponse
+                    {
+                        DataJson = request.Form.DataJson,
+                        Errors = {e.Message},
+                        SchemaJson = schemaJson,
+                        UiJson = uiJson,
+                        StateJson = request.Form.StateJson
+                    },
+                    Schema = null
+                };
+            }
+        }
 
         /// <summary>
         /// Configures replication writebacks to MySQL
@@ -292,7 +367,7 @@ namespace PluginMySQL.Plugin
         /// <returns></returns>
         public override async Task<PrepareWriteResponse> PrepareWrite(PrepareWriteRequest request, ServerCallContext context)
         {
-            Logger.SetLogLevel(Logger.LogLevel.Debug);
+            // Logger.SetLogLevel(Logger.LogLevel.Debug);
             Logger.SetLogPrefix(request.DataVersions.JobId);
             Logger.Info("Preparing write...");
             _server.WriteConfigured = false;
@@ -345,10 +420,7 @@ namespace PluginMySQL.Plugin
             
                 var schema = _server.WriteSettings.Schema;
                 var inCount = 0;
-                var config =
-                    JsonConvert.DeserializeObject<ConfigureReplicationFormData>(_server.WriteSettings.Replication
-                        .SettingsJson);
-            
+
                 // get next record to publish while connected and configured
                 while (await requestStream.MoveNext(context.CancellationToken) && _server.Connected &&
                        _server.WriteConfigured)
@@ -360,6 +432,9 @@ namespace PluginMySQL.Plugin
             
                     if (_server.WriteSettings.IsReplication())
                     {
+                        var config =
+                            JsonConvert.DeserializeObject<ConfigureReplicationFormData>(_server.WriteSettings.Replication
+                                .SettingsJson);
                         
                         // send record to source system
                         // add await for unit testing 
@@ -368,7 +443,12 @@ namespace PluginMySQL.Plugin
                     }
                     else
                     {
-                        throw new Exception("Only replication writebacks are supported");
+                        // send record to source system
+                        // add await for unit testing 
+                        // removed to allow multiple to run at the same time
+                        Task.Run(async () =>
+                                await Write.WriteRecordAsync(_connectionFactory, schema, record, responseStream),
+                            context.CancellationToken);
                     }
                 }
             
