@@ -41,7 +41,10 @@ namespace PluginMySQL.API.Replication
                         {
                             rawValue = JsonConvert.SerializeObject(rawValue);
                         }
-                        querySb.Append($"'{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''")}',");
+
+                        querySb.Append(rawValue != null
+                            ? $"'{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''")}',"
+                            : $"NULL,");
                     }
                     else
                     {
@@ -79,7 +82,9 @@ namespace PluginMySQL.API.Replication
                                 {
                                     rawValue = JsonConvert.SerializeObject(rawValue);
                                 }
-                                querySb.Append($"{Utility.Utility.GetSafeName(column.ColumnName, '`')}='{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''")}',");
+                                querySb.Append(rawValue != null
+                                    ? $"'{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''")}',"
+                                    : $"NULL,");
                             }
                             else
                             {
