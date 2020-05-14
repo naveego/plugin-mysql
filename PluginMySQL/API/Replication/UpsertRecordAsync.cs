@@ -60,7 +60,7 @@ namespace PluginMySQL.API.Replication
                 Logger.Debug($"Insert record query: {query}");
 
                 var cmd = connFactory.GetCommand(query, conn);
-                
+
                 await cmd.ExecuteNonQueryAsync();
             }
             catch (Exception e)
@@ -82,33 +82,39 @@ namespace PluginMySQL.API.Replication
                                 {
                                     rawValue = JsonConvert.SerializeObject(rawValue);
                                 }
-                                querySb.Append(rawValue != null
-                                    ? $"'{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''")}',"
-                                    : $"NULL,");
+
+                                if (rawValue != null)
+                                {
+                                    querySb.Append(
+                                        $"{Utility.Utility.GetSafeName(column.ColumnName, '`')}='{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''")}',");
+                                }
+                                else
+                                {
+                                    querySb.Append($"{Utility.Utility.GetSafeName(column.ColumnName, '`')}=NULL,");
+                                }
                             }
                             else
                             {
                                 querySb.Append($"{Utility.Utility.GetSafeName(column.ColumnName, '`')}=NULL,");
                             }
-                            
                         }
                     }
 
                     querySb.Length--;
-                    
+
                     var primaryKey = table.Columns.Find(c => c.PrimaryKey);
                     var primaryValue = recordMap[primaryKey.ColumnName];
                     if (primaryKey.Serialize)
                     {
                         primaryValue = JsonConvert.SerializeObject(primaryValue);
                     }
-                    
+
                     querySb.Append($" WHERE {primaryKey.ColumnName} = '{primaryValue}'");
 
                     var query = querySb.ToString();
-                    
+
                     var cmd = connFactory.GetCommand(query, conn);
-                    
+
                     await cmd.ExecuteNonQueryAsync();
                 }
                 catch (Exception exception)
