@@ -50,7 +50,8 @@ namespace PluginMySQL.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message, context);
+                
                 return new ConnectResponse
                 {
                     OauthStateJson = request.OauthStateJson,
@@ -67,8 +68,15 @@ namespace PluginMySQL.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
-                throw;
+                Logger.Error(e, e.Message, context);
+                
+                return new ConnectResponse
+                {
+                    OauthStateJson = request.OauthStateJson,
+                    ConnectionError = e.Message,
+                    OauthError = "",
+                    SettingsError = ""
+                };
             }
 
             // test cluster factory
@@ -90,7 +98,7 @@ namespace PluginMySQL.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message, context);
 
                 return new ConnectResponse
                 {
@@ -166,8 +174,8 @@ namespace PluginMySQL.Plugin
                 }
                 catch (Exception e)
                 {
-                    Logger.Error(e.Message);
-                    throw;
+                    Logger.Error(e, e.Message, context);
+                    return new DiscoverSchemasResponse();
                 }
             }
 
@@ -187,8 +195,8 @@ namespace PluginMySQL.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
-                throw;
+                Logger.Error(e, e.Message, context);
+                return new DiscoverSchemasResponse();
             }
         }
 
@@ -202,30 +210,37 @@ namespace PluginMySQL.Plugin
         public override async Task ReadStream(ReadRequest request, IServerStreamWriter<Record> responseStream,
             ServerCallContext context)
         {
-            var schema = request.Schema;
-            var limit = request.Limit;
-            var limitFlag = request.Limit != 0;
-            var jobId = request.JobId;
-            var recordsCount = 0;
-            
-            Logger.SetLogPrefix(jobId);
-            
-            var records = Read.ReadRecords(_connectionFactory, schema);
-
-            await foreach (var record in records)
+            try
             {
-                // stop publishing if the limit flag is enabled and the limit has been reached or the server is disconnected
-                if (limitFlag && recordsCount == limit || !_server.Connected)
-                {
-                    break;
-                }
-                
-                // publish record
-                await responseStream.WriteAsync(record);
-                recordsCount++;
-            }
+                var schema = request.Schema;
+                var limit = request.Limit;
+                var limitFlag = request.Limit != 0;
+                var jobId = request.JobId;
+                var recordsCount = 0;
             
-            Logger.Info($"Published {recordsCount} records");
+                Logger.SetLogPrefix(jobId);
+            
+                var records = Read.ReadRecords(_connectionFactory, schema);
+
+                await foreach (var record in records)
+                {
+                    // stop publishing if the limit flag is enabled and the limit has been reached or the server is disconnected
+                    if (limitFlag && recordsCount == limit || !_server.Connected)
+                    {
+                        break;
+                    }
+                
+                    // publish record
+                    await responseStream.WriteAsync(record);
+                    recordsCount++;
+                }
+            
+                Logger.Info($"Published {recordsCount} records");
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e, e.Message, context);
+            }
         }
         
         /// <summary>
@@ -286,7 +301,7 @@ namespace PluginMySQL.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message, context);
                 return new ConfigureWriteResponse
                 {
                     Form = new ConfigurationFormResponse
@@ -342,7 +357,7 @@ namespace PluginMySQL.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message, context);
                 return Task.FromResult(new ConfigureReplicationResponse
                 {
                     Form = new ConfigurationFormResponse
@@ -355,8 +370,6 @@ namespace PluginMySQL.Plugin
                     }
                 });
             }
-            
-            return Task.FromResult(new ConfigureReplicationResponse());
         }
 
         /// <summary>
@@ -390,8 +403,8 @@ namespace PluginMySQL.Plugin
                 }
                 catch (Exception e)
                 {
-                    Logger.Error(e.Message);
-                    throw;
+                    Logger.Error(e, e.Message, context);
+                    return new PrepareWriteResponse();
                 }
                 
                 Logger.Info($"Finished reconciling Replication Job {request.DataVersions.JobId}");
@@ -456,8 +469,7 @@ namespace PluginMySQL.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
-                throw;
+                Logger.Error(e, e.Message, context);
             }
         }
 

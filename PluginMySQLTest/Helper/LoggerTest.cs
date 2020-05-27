@@ -27,7 +27,7 @@ namespace PluginMySQLTest.Helper
             Logger.Verbose("verbose");
             Logger.Debug("debug");
             Logger.Info("info");
-            Logger.Error("error");
+            Logger.Error(new Exception("error"), "error");
 
             // assert
             string[] lines = File.ReadAllLines(_path);
@@ -56,7 +56,7 @@ namespace PluginMySQLTest.Helper
             Logger.Verbose("verbose");
             Logger.Debug("debug");
             Logger.Info("info");
-            Logger.Error("error");
+            Logger.Error(new Exception("error"), "error");
 
             // assert
             string[] lines = File.ReadAllLines(_path);
@@ -85,7 +85,7 @@ namespace PluginMySQLTest.Helper
             Logger.Verbose("verbose");
             Logger.Debug("debug");
             Logger.Info("info");
-            Logger.Error("error");
+            Logger.Error(new Exception("error"), "error");
 
             // assert
             string[] lines = File.ReadAllLines(_path);
@@ -114,7 +114,7 @@ namespace PluginMySQLTest.Helper
             Logger.Verbose("verbose");
             Logger.Debug("debug");
             Logger.Info("info");
-            Logger.Error("error");
+            Logger.Error(new Exception("error"), "error");
 
             // assert
             string[] lines = File.ReadAllLines(_path);
@@ -143,7 +143,7 @@ namespace PluginMySQLTest.Helper
             Logger.Verbose("verbose");
             Logger.Debug("debug");
             Logger.Info("info");
-            Logger.Error("error");
+            Logger.Error(new Exception("error"), "error");
 
             // assert
             string[] lines = File.Exists(_path) ? File.ReadAllLines(_path) : new string[0];
