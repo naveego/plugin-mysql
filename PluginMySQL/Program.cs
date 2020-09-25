@@ -3,7 +3,6 @@ using System.Linq;
 using Grpc.Core;
 using Naveego.Sdk.Plugins;
 using PluginMySQL.Helper;
-using Serilog;
 
 namespace PluginMySQL
 {

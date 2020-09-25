@@ -82,8 +82,7 @@ namespace PluginMySQL.Helper
             
             GrpcEnvironment.Logger.Debug(message);
             
-            // WriteLog(message);
-            Log.Verbose(message);
+            Log.Verbose($"{_logPrefix} {message}");
         }
         
         /// <summary>
@@ -99,8 +98,7 @@ namespace PluginMySQL.Helper
             
             GrpcEnvironment.Logger.Debug(message);
             
-            // WriteLog(message);
-            Log.Debug(message);
+            Log.Debug($"{_logPrefix} {message}");
         }
         /// <summary>
         /// Logging method for Info messages
@@ -115,8 +113,7 @@ namespace PluginMySQL.Helper
             
             GrpcEnvironment.Logger.Info(message);
             
-            // WriteLog(message);
-            Log.Information(message);
+            Log.Information($"{_logPrefix} {message}");
         }
         
         /// <summary>
@@ -133,8 +130,7 @@ namespace PluginMySQL.Helper
             
             GrpcEnvironment.Logger.Error(exception, message);
             
-            // WriteLog(message);
-            Log.Error(exception, message);
+            Log.Error(exception, $"{_logPrefix} {message}");
         }
         
         /// <summary>
@@ -153,8 +149,7 @@ namespace PluginMySQL.Helper
             GrpcEnvironment.Logger.Error(exception, message);
             context.Status = new Status(StatusCode.Unknown, message);
             
-            // WriteLog(message);
-            Log.Error(exception, message);
+            Log.Error(exception, $"{_logPrefix} {message}");
         }
 
         /// <summary>
@@ -172,7 +167,7 @@ namespace PluginMySQL.Helper
         /// <param name="logPrefix"></param>
         public static void SetLogPrefix(string logPrefix)
         {
-            _logPrefix = logPrefix;
+            _logPrefix = $"<{logPrefix}>";
         }
     }
 }
