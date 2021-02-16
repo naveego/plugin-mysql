@@ -27,7 +27,7 @@ namespace PluginMySQL.API.Replication
                     {"VersionTableName", new Dictionary<string, string>
                     {
                         {"type", "string"},
-                        {"title", "Version Record Bucket Name"},
+                        {"title", "Version Record Table Name"},
                         {"description", "Name for your version record table in MySQL"},
                     }},
                 }},
