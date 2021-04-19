@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Naveego.Sdk.Logging;
 using PluginMySQL.API.Factory;
 using PluginMySQL.DataContracts;
 using PluginMySQL.Helper;
