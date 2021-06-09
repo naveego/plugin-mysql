@@ -1,6 +1,6 @@
 using System.Data;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using PluginMySQL.Helper;
 
 namespace PluginMySQL.API.Factory

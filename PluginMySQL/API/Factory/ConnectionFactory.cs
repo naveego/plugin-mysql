@@ -1,5 +1,4 @@
 using System.Data;
-using MySql.Data.MySqlClient;
 using PluginMySQL.Helper;
 
 namespace PluginMySQL.API.Factory
