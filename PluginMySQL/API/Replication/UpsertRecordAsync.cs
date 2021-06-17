@@ -52,42 +52,46 @@ namespace PluginMySQL.API.Replication
                             {
                                 rawValue = JsonConvert.SerializeObject(rawValue);
                             }
-                            
-                            switch (column.DataType)
+
+                            if (rawValue != null)
                             {
-                                case "date":
-                                    if (DateTime.TryParse(rawValue.ToString(), out var date))
-                                    {
-                                        rawValue = date.ToString("yyyy-MM-dd");
-                                    }
-                                    else
-                                    {
-                                        rawValue = null;
-                                    }
+                                switch (column.DataType)
+                                {
+                                    case "date":
+                                        if (DateTime.TryParse(rawValue.ToString(), out var date))
+                                        {
+                                            rawValue = date.ToString("yyyy-MM-dd");
+                                        }
+                                        else
+                                        {
+                                            rawValue = null;
+                                        }
 
-                                    break;
-                                case "datetime":
-                                    if (DateTime.TryParse(rawValue.ToString(), out var datetime))
-                                    {
-                                        rawValue = datetime.ToString("yyyy-MM-dd HH:mm:ss");
-                                    }
-                                    else
-                                    {
-                                        rawValue = null;
-                                    }
-                                    break;
-                                case "time":
-                                    if (TimeSpan.TryParse(rawValue.ToString(), out var time))
-                                    {
-                                        rawValue = time.ToString("c");
-                                    }
-                                    else
-                                    {
-                                        rawValue = null;
-                                    }
-                                    break;
+                                        break;
+                                    case "datetime":
+                                        if (DateTime.TryParse(rawValue.ToString(), out var datetime))
+                                        {
+                                            rawValue = datetime.ToString("yyyy-MM-dd HH:mm:ss");
+                                        }
+                                        else
+                                        {
+                                            rawValue = null;
+                                        }
+                                        break;
+                                    case "time":
+                                        if (TimeSpan.TryParse(rawValue.ToString(), out var time))
+                                        {
+                                            rawValue = time.ToString("c");
+                                        }
+                                        else
+                                        {
+                                            rawValue = null;
+                                        }
+                                        break;
+                                }
+
                             }
-
+                            
                             querySb.Append(rawValue != null
                                 ? $"'{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''")}',"
                                 : $"NULL,");
@@ -126,40 +130,46 @@ namespace PluginMySQL.API.Replication
                             {
                                 rawValue = JsonConvert.SerializeObject(rawValue);
                             }
-                            
-                            switch (column.DataType)
-                            {
-                                case "date":
-                                    if (DateTime.TryParse(rawValue.ToString(), out var date))
-                                    {
-                                        rawValue = date.ToString("yyyy-MM-dd");
-                                    }
-                                    else
-                                    {
-                                        rawValue = null;
-                                    }
 
-                                    break;
-                                case "datetime":
-                                    if (DateTime.TryParse(rawValue.ToString(), out var datetime))
-                                    {
-                                        rawValue = datetime.ToString("yyyy-MM-dd HH:mm:ss");
-                                    }
-                                    else
-                                    {
-                                        rawValue = null;
-                                    }
-                                    break;
-                                case "time":
-                                    if (TimeSpan.TryParse(rawValue.ToString(), out var time))
-                                    {
-                                        rawValue = time.ToString("c");
-                                    }
-                                    else
-                                    {
-                                        rawValue = null;
-                                    }
-                                    break;
+                            if (rawValue != null)
+                            {
+                                switch (column.DataType)
+                                {
+                                    case "date":
+                                        if (DateTime.TryParse(rawValue.ToString(), out var date))
+                                        {
+                                            rawValue = date.ToString("yyyy-MM-dd");
+                                        }
+                                        else
+                                        {
+                                            rawValue = null;
+                                        }
+
+                                        break;
+                                    case "datetime":
+                                        if (DateTime.TryParse(rawValue.ToString(), out var datetime))
+                                        {
+                                            rawValue = datetime.ToString("yyyy-MM-dd HH:mm:ss");
+                                        }
+                                        else
+                                        {
+                                            rawValue = null;
+                                        }
+
+                                        break;
+                                    case "time":
+                                        if (TimeSpan.TryParse(rawValue.ToString(), out var time))
+                                        {
+                                            rawValue = time.ToString("c");
+                                        }
+                                        else
+                                        {
+                                            rawValue = null;
+                                        }
+
+                                        break;
+                                }
+
                             }
 
                             querySb.Append(rawValue != null
