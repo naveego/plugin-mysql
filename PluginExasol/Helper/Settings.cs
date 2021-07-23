@@ -6,7 +6,6 @@ namespace PluginExasol.Helper
     public class Settings
     {
         public string Hostname { get; set; }
-        public string Database { get; set; }
         public string Port { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
@@ -54,7 +53,7 @@ namespace PluginExasol.Helper
         /// <returns></returns>
         public string GetConnectionString(string database)
         {
-            return $"DRIVER={{Exasol Driver}};EXAHOST={Hostname}:{Port};UID={Username};PWD={Password};EXASCHEMA={database}";
+            return $"DRIVER={{Exasol Driver}};EXAHOST={Hostname}:{Port};UID={Username};PWD={Password}";
         }
     }
 }

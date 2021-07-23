@@ -24,7 +24,7 @@ namespace PluginExasol.API.Factory
         {
             _conn = new EXAConnection();
             
-            _conn.ConnectionString = settings.GetConnectionString() + $"DATABASE={database};";
+            _conn.ConnectionString = settings.GetConnectionString();
         }
 
         public async Task OpenAsync()

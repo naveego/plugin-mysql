@@ -19,8 +19,7 @@ namespace PluginExasol.API.Discover
         private const string IsNullable = "COLUMN_IS_NULLABLE";
         private const string CharacterMaxLength = "COLUMN_MAXSIZE";
 
-        private const string GetAllTablesAndColumnsQuery = @"
-            SELECT 
+        private const string GetAllTablesAndColumnsQuery = @"SELECT 
             c.COLUMN_TABLE,
             c.COLUMN_SCHEMA,
             c.COLUMN_NAME,
@@ -30,10 +29,13 @@ namespace PluginExasol.API.Discover
             c.COLUMN_MAXSIZE,
             s.CONSTRAINT_TYPE
             FROM SYS.EXA_ALL_COLUMNS as c
-            INNER JOIN SYS.EXA_ALL_CONSTRAINT_COLUMNS as s ON 
+            LEFT JOIN SYS.EXA_ALL_CONSTRAINT_COLUMNS as s ON 
             (c.COLUMN_TABLE = s.CONSTRAINT_TABLE AND 
             c.COLUMN_NAME= s.COLUMN_NAME AND
-            c.COLUMN_SCHEMA = s.CONSTRAINT_SCHEMA)";
+            c.COLUMN_SCHEMA = s.CONSTRAINT_SCHEMA)
+            WHERE s.CONSTRAINT_TYPE IS NULL
+            OR s.CONSTRAINT_TYPE =  'PRIMARY KEY'
+            ORDER BY c.COLUMN_SCHEMA, c.COLUMN_TABLE";
         
 
         public static async IAsyncEnumerable<Schema> GetAllSchemas(IConnectionFactory connFactory, int sampleSize = 5)
@@ -87,7 +89,7 @@ namespace PluginExasol.API.Discover
                     {
                         Id = $"{reader.GetValueById(ColumnName)}",
                         Name = reader.GetValueById(ColumnName).ToString(),
-                        IsKey = reader.GetValueById(ColumnKey).ToString() == "PRIMARY KEY",
+                        IsKey = reader.GetValueById(ColumnKey)?.ToString() == "PRIMARY KEY",
                         IsNullable = Boolean.Parse(reader.GetValueById(IsNullable).ToString()),
                         Type = GetType(reader.GetValueById(DataType).ToString()),
                         TypeAtSource = GetTypeAtSource(reader.GetValueById(DataType).ToString(),

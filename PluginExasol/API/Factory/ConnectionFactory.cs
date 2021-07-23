@@ -18,10 +18,6 @@ namespace PluginExasol.API.Factory
             return new Connection(_settings);
         }
 
-        public IConnection GetConnection(string database)
-        {
-            return new Connection(_settings, database);
-        }
 
         public ICommand GetCommand(string commandText, IConnection connection)
         {

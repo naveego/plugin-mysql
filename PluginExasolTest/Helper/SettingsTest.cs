@@ -115,7 +115,7 @@ namespace PluginExasolTest.Helper
 
             // act
             var connString = settings.GetConnectionString();
-            var connDbString = settings.GetConnectionString("otherdb");
+            var connDbString = settings.GetConnectionString();
 
             // assert
             Assert.Equal("Server=123.456.789.0; Port=8563; Database=master; User=username; Password=password;", connString);

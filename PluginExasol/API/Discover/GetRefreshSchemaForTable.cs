@@ -8,47 +8,34 @@ namespace PluginExasol.API.Discover
 {
     public static partial class Discover
     {
-//         private const string GetTableAndColumnsQuery = @"
-// SELECT t.TABLE_NAME
-//      , t.TABLE_SCHEMA
-//      , t.TABLE_TYPE
-//      , c.COLUMN_NAME
-//      , c.DATA_TYPE
-//      , c.COLUMN_KEY
-//      , c.IS_NULLABLE
-//      , c.CHARACTER_MAXIMUM_LENGTH
-//
-// FROM INFORMATION_SCHEMA.TABLES AS t
-//       INNER JOIN INFORMATION_SCHEMA.COLUMNS AS c ON c.TABLE_SCHEMA = t.TABLE_SCHEMA AND c.TABLE_NAME = t.TABLE_NAME
-//
-// WHERE t.TABLE_SCHEMA NOT IN ('mysql', 'information_schema', 'performance_schema', 'sys')
-// AND t.TABLE_SCHEMA = '{0}'
-// AND t.TABLE_NAME = '{1}' 
-//
-// ORDER BY t.TABLE_NAME";
 
-        private const string GetTableAndColumnsQuery = @"
-            SELECT 
+        private const string GetTableAndColumnsQuery = @"SELECT 
             c.COLUMN_TABLE,
-            c.COLUMN_SCHEMA,
-            c.COLUMN_NAME,
-            c.COLUMN_TYPE,
-            c.COLUMN_IS_DISTRIBUTION_KEY,
-            c.COLUMN_IS_NULLABLE,
-            c.COLUMN_MAXSIZE
+        c.COLUMN_SCHEMA,
+        c.COLUMN_NAME,
+        c.COLUMN_TYPE,
+        c.COLUMN_IS_DISTRIBUTION_KEY,
+        c.COLUMN_IS_NULLABLE,
+        c.COLUMN_MAXSIZE,
+        s.CONSTRAINT_TYPE
             FROM SYS.EXA_ALL_COLUMNS as c
-            WHERE c.COLUMN_SCHEMA = '{0}'
-            AND c.COLUMN_TABLE = '{1}'
-            ORDER BY c.COLUMN_TABLE
-";
+            LEFT JOIN SYS.EXA_ALL_CONSTRAINT_COLUMNS as s ON 
+            (c.COLUMN_TABLE = s.CONSTRAINT_TABLE AND 
+        c.COLUMN_NAME= s.COLUMN_NAME AND
+        c.COLUMN_SCHEMA = s.CONSTRAINT_SCHEMA)
+        WHERE s.CONSTRAINT_TYPE IS NULL
+        OR s.CONSTRAINT_TYPE =  'PRIMARY KEY'
+        WHERE c.COLUMN_SCHEMA = '{0}'
+        AND c.COLUMN_TABLE = '{1}'
+        ORDER BY c.COLUMN_SCHEMA, c.COLUMN_TABLE";
+        
+        
 
         public static async Task<Schema> GetRefreshSchemaForTable(IConnectionFactory connFactory, Schema schema,
             int sampleSize = 5)
         {
             var decomposed = DecomposeSafeName(schema.Id).TrimEscape();
-            var conn = string.IsNullOrWhiteSpace(decomposed.Database)
-                ? connFactory.GetConnection()
-                : connFactory.GetConnection(decomposed.Database);
+            var conn = connFactory.GetConnection();
 
             try
             {
