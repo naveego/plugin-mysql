@@ -1,1 +1,1 @@
-# plugin-mysql
+# plugin-exasol
