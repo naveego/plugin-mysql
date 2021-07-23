@@ -51,7 +51,7 @@ namespace PluginExasol.API.Read
                             {
                                 var rawValue = reader.GetValueById(property.Id, '"');
 
-                                if (rawValue is DBNull)
+                                if (rawValue is DBNull || string.IsNullOrWhiteSpace(rawValue.ToString()))
                                 {
                                     recordMap[property.Id] = null;
                                 }
