@@ -15,7 +15,7 @@ namespace PluginExasol.API.Discover
         private const string TableType = "TABLE_TYPE";
         private const string ColumnName = "COLUMN_NAME";
         private const string DataType = "COLUMN_TYPE";
-        private const string ColumnKey = "COLUMN_IS_DISTRIBUTION_KEY";
+        private const string ColumnKey = "CONSTRAINT_TYPE";
         private const string IsNullable = "COLUMN_IS_NULLABLE";
         private const string CharacterMaxLength = "COLUMN_MAXSIZE";
 
@@ -27,12 +27,13 @@ namespace PluginExasol.API.Discover
             c.COLUMN_TYPE,
             c.COLUMN_IS_DISTRIBUTION_KEY,
             c.COLUMN_IS_NULLABLE,
-            c.COLUMN_MAXSIZE
+            c.COLUMN_MAXSIZE,
+            s.CONSTRAINT_TYPE
             FROM SYS.EXA_ALL_COLUMNS as c
-            WHERE COLUMN_SCHEMA = 'FLIGHTS'
-            AND COLUMN_TABLE IN ('AIRLINE', 'AIRPORT')
-            --WHERE COLUMN_SCHEMA LIKE 'TPC%'
-            ORDER BY c.COLUMN_SCHEMA, c.COLUMN_TABLE";
+            INNER JOIN SYS.EXA_ALL_CONSTRAINT_COLUMNS as s ON 
+            (c.COLUMN_TABLE = s.CONSTRAINT_TABLE AND 
+            c.COLUMN_NAME= s.COLUMN_NAME AND
+            c.COLUMN_SCHEMA = s.CONSTRAINT_SCHEMA)";
         
 
         public static async IAsyncEnumerable<Schema> GetAllSchemas(IConnectionFactory connFactory, int sampleSize = 5)
@@ -86,7 +87,7 @@ namespace PluginExasol.API.Discover
                     {
                         Id = $"{reader.GetValueById(ColumnName)}",
                         Name = reader.GetValueById(ColumnName).ToString(),
-                        IsKey = false,
+                        IsKey = reader.GetValueById(ColumnKey).ToString() == "PRIMARY KEY",
                         IsNullable = Boolean.Parse(reader.GetValueById(IsNullable).ToString()),
                         Type = GetType(reader.GetValueById(DataType).ToString()),
                         TypeAtSource = GetTypeAtSource(reader.GetValueById(DataType).ToString(),
