@@ -1,12 +1,12 @@
 {
-  "id": "plugin-exasol",
-  "displayName": "Exasol",
-  "description": "Publisher which connects to Exasol",
+  "id": "plugin-mysql",
+  "displayName": "MySQL",
+  "description": "Publisher which connects to MySQL",
   "apiVersion": "2",
   "versionDescription": "Version 2",
   "version": "1.1.2",
   "iconFile": "icon.png",
-  "executable": "PluginExasol",
+  "executable": "PluginMySQL",
   "kind": "publisher",
   "os": "$GOOS",
   "arch": "$GOARCH",
@@ -15,8 +15,8 @@
   "canProduceMultipleSchemas": true,
   "canAcceptQueryBasedSchemas": true,
   "canUseOAuth": false,
-  "canConfigureWrite": false,
-  "canWrite": false,
+  "canConfigureWrite": true,
+  "canWrite": true,
   "canConfigureReplication": true,
   "canWriteReplication": true,
   "querySchema": {
@@ -35,6 +35,7 @@
       "ui:order": [
         "Hostname",
         "Port",
+        "Database",
         "Username",
         "Password"
       ],
@@ -48,12 +49,12 @@
         "Hostname" : {
           "type": "string",
           "title": "Hostname",
-          "description": "The hostname of the Exasol Server"
+          "description": "The hostname of the MySQL Server"
         },
         "Port": {
           "type": "string",
           "title": "Port",
-          "description": "The port of the Exasol Server (default: 8563)"
+          "description": "The port of the MySQL Server"
         },
         "Username": {
           "type": "string",
@@ -64,13 +65,18 @@
           "type": "string",
           "title": "Password",
           "description": "The password to use for authentication"
+        },
+        "Database": {
+          "type": "string",
+          "title": "Database",
+          "description": "The Database within the MySQL Server"
         }
       },
       "required": [
         "Hostname",
-        "Port",
         "Username",
-        "Password"
+        "Password",
+        "Database"
       ]
     }
   }
