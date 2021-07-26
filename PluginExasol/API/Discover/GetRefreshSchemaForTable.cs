@@ -23,10 +23,10 @@ namespace PluginExasol.API.Discover
             (c.COLUMN_TABLE = s.CONSTRAINT_TABLE AND 
         c.COLUMN_NAME= s.COLUMN_NAME AND
         c.COLUMN_SCHEMA = s.CONSTRAINT_SCHEMA)
-        WHERE s.CONSTRAINT_TYPE IS NULL
-        OR s.CONSTRAINT_TYPE =  'PRIMARY KEY'
-        WHERE c.COLUMN_SCHEMA = '{0}'
-        AND c.COLUMN_TABLE = '{1}'
+        WHERE (s.CONSTRAINT_TYPE IS NULL
+        OR s.CONSTRAINT_TYPE =  'PRIMARY KEY')
+        AND (c.COLUMN_SCHEMA = '{0}'
+        AND c.COLUMN_TABLE = '{1}')
         ORDER BY c.COLUMN_SCHEMA, c.COLUMN_TABLE";
         
         

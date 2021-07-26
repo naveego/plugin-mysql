@@ -225,7 +225,7 @@ namespace PluginExasolTest.Plugin
             Assert.Equal("", property.Description);
             Assert.Equal(PropertyType.String, property.Type);
             Assert.False(property.IsKey);
-            Assert.False(property.IsNullable);
+            Assert.True(property.IsNullable);
 
             // cleanup
             await channel.ShutdownAsync();
@@ -273,10 +273,10 @@ namespace PluginExasolTest.Plugin
             Assert.Equal(2, schema.Properties.Count);
 
             var property = schema.Properties[0];
-            Assert.Equal("\"AIRLINE_ID\"", property.Id);
-            Assert.Equal("AIRLINE_ID", property.Name);
+            Assert.Equal("\"AIRLINE_NAME\"", property.Id);
+            Assert.Equal("AIRLINE_NAME", property.Name);
             Assert.Equal("", property.Description);
-            Assert.Equal(PropertyType.Decimal, property.Type);
+            Assert.Equal(PropertyType.String, property.Type);
             Assert.False(property.IsKey);
             Assert.False(property.IsNullable);
 
@@ -307,7 +307,7 @@ namespace PluginExasolTest.Plugin
             {
                 Mode = DiscoverSchemasRequest.Types.Mode.Refresh,
                 SampleSize = 10,
-                ToRefresh = {GetTestSchema("test", "test", $"SELECT * FROM `classicmodels`.`customers`")}
+                ToRefresh = {GetTestSchema("test", "test", $"SELECT * FROM \"FLIGHTS\".\"AIRLINE\"")}
             };
 
             // act
@@ -321,17 +321,17 @@ namespace PluginExasolTest.Plugin
             var schema = response.Schemas[0];
             Assert.Equal($"test", schema.Id);
             Assert.Equal("test", schema.Name);
-            Assert.Equal($"SELECT * FROM `classicmodels`.`customers`", schema.Query);
+            Assert.Equal($"SELECT * FROM \"FLIGHTS\".\"AIRLINE\"", schema.Query);
             Assert.Equal(10, schema.Sample.Count);
-            Assert.Equal(13, schema.Properties.Count);
+            Assert.Equal(2, schema.Properties.Count);
 
             var property = schema.Properties[0];
-            Assert.Equal("`customerNumber`", property.Id);
-            Assert.Equal("customerNumber", property.Name);
+            Assert.Equal("\"AIRLINE_ID\"", property.Id);
+            Assert.Equal("AIRLINE_ID", property.Name);
             Assert.Equal("", property.Description);
-            Assert.Equal(PropertyType.Integer, property.Type);
-            Assert.True(property.IsKey);
-            Assert.False(property.IsNullable);
+            Assert.Equal(PropertyType.String, property.Type);
+            Assert.False(property.IsKey);
+            Assert.True(property.IsNullable);
 
             // cleanup
             await channel.ShutdownAsync();
