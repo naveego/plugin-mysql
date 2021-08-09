@@ -324,7 +324,7 @@ namespace PluginMySQL.Plugin
                             Form = new ConfigurationFormResponse
                             {
                                 DataJson = request.Form.DataJson,
-                                Errors = { $"{formData.GoldenRecordIdParam} was specified as the Golden Record Id Parameter but was not a parameter on the stored procedure {formData.StoredProcedure}" },
+                                Errors = { $"{formData.GoldenRecordIdParam} was specified as the Golden Record Id Parameter but was not a parameter on the stored procedure {formData.StoredProcedure} (available parameters: {string.Join(",", schema.Properties.Select(p => p.Id))})" },
                                 SchemaJson = schemaJson,
                                 UiJson = uiJson,
                                 StateJson = request.Form.StateJson
