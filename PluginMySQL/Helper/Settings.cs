@@ -10,6 +10,7 @@ namespace PluginMySQL.Helper
         public string Username { get; set; }
         public string Password { get; set; }
         public string Database { get; set; }
+        public string AppendConnectionString { get; set; }
 
         /// <summary>
         /// Validates the settings input object
@@ -44,7 +45,7 @@ namespace PluginMySQL.Helper
         /// <returns></returns>
         public string GetConnectionString()
         {
-            return $"Server={Hostname}; Port={Port}; Database={Database}; User={Username}; Password={Password};";
+            return $"Server={Hostname}; Port={Port}; Database={Database}; User={Username}; Password={Password}; {AppendConnectionString}";
         }
         
         /// <summary>
@@ -53,7 +54,7 @@ namespace PluginMySQL.Helper
         /// <returns></returns>
         public string GetConnectionString(string database)
         {
-            return $"Server={Hostname}; Port={Port}; Database={database}; User={Username}; Password={Password};";
+            return $"Server={Hostname}; Port={Port}; Database={database}; User={Username}; Password={Password}; {AppendConnectionString}";
         }
     }
 }

@@ -37,7 +37,8 @@
         "Port",
         "Database",
         "Username",
-        "Password"
+        "Password",
+        "AppendConnectionString"
       ],
       "Password": {
         "ui:widget": "password"
@@ -70,6 +71,11 @@
           "type": "string",
           "title": "Database",
           "description": "The Database within the MySQL Server"
+        },
+        "AppendConnectionString": {
+          "type": "string",
+          "title": "Append Connection String",
+          "description": "Value to be appended to the end of the connection string"
         }
       },
       "required": [
