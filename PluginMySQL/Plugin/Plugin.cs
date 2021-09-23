@@ -75,7 +75,7 @@ namespace PluginMySQL.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e, e.Message, context);
+                Logger.Error(e, e.Message);
                 
                 return new ConnectResponse
                 {
@@ -93,7 +93,7 @@ namespace PluginMySQL.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e, e.Message, context);
+                Logger.Error(e, e.Message);
                 
                 return new ConnectResponse
                 {
@@ -123,7 +123,7 @@ namespace PluginMySQL.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e, e.Message, context);
+                Logger.Error(e, e.Message);
 
                 return new ConnectResponse
                 {
@@ -224,7 +224,7 @@ namespace PluginMySQL.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e, e.Message, context);
+                Logger.Error(e, e.Message);
                 return new DiscoverSchemasResponse();
             }
         }
@@ -268,7 +268,7 @@ namespace PluginMySQL.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e, e.Message, context);
+                Logger.Error(e, e.Message);
             }
         }
         
@@ -330,7 +330,7 @@ namespace PluginMySQL.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e, e.Message, context);
+                Logger.Error(e, e.Message);
                 return new ConfigureWriteResponse
                 {
                     Form = new ConfigurationFormResponse
@@ -386,7 +386,7 @@ namespace PluginMySQL.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e, e.Message, context);
+                Logger.Error(e, e.Message);
                 return Task.FromResult(new ConfigureReplicationResponse
                 {
                     Form = new ConfigurationFormResponse
@@ -432,7 +432,7 @@ namespace PluginMySQL.Plugin
                 }
                 catch (Exception e)
                 {
-                    Logger.Error(e, e.Message, context);
+                    Logger.Error(e, e.Message);
                     return new PrepareWriteResponse();
                 }
                 
@@ -498,7 +498,7 @@ namespace PluginMySQL.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e, e.Message, context);
+                Logger.Error(e, e.Message);
             }
         }
 
