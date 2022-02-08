@@ -26,5 +26,10 @@ namespace PluginMySQL.API.Factory
         {
             return new Command(commandText, connection);
         }
+
+        public Settings GetSettings()
+        {
+            return _settings;
+        }
     }
 }

@@ -38,6 +38,7 @@
         "Database",
         "Username",
         "Password",
+        "DisableDiscoveryCounts",
         "AppendConnectionString"
       ],
       "Password": {
@@ -71,6 +72,12 @@
           "type": "string",
           "title": "Database",
           "description": "The Database within the MySQL Server"
+        },
+        "DisableDiscoveryCounts": {
+          "type": "boolean",
+          "title": "Disable Discovery Counts",
+          "description": "(Optional) Performance improvement to discovery that disables counting the records for a schema",
+          "default": false
         },
         "AppendConnectionString": {
           "type": "string",

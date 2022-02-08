@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Naveego.Sdk.Plugins;
 using PluginMySQL.API.Factory;
+using PluginMySQL.Helper;
 
 namespace PluginMySQL.API.Discover
 {
@@ -9,6 +10,15 @@ namespace PluginMySQL.API.Discover
     {
         public static async Task<Count> GetCountOfRecords(IConnectionFactory connFactory, Schema schema)
         {
+            var settings = connFactory.GetSettings();
+            if (settings.DisableDiscoveryCounts)
+            {
+                return new Count
+                {
+                    Kind = Count.Types.Kind.Unavailable,
+                };
+            }
+            
             var query = schema.Query;
             if (string.IsNullOrWhiteSpace(query))
             {
