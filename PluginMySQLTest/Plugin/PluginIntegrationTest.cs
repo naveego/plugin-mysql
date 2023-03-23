@@ -14,15 +14,20 @@ namespace PluginMySQLTest.Plugin
 {
     public class PluginIntegrationTest
     {
+        private const string SETTINGS_HOSTNAME = "";
+        private const string SETTINGS_DATABASE = "";
+        private const string SETTINGS_PASSWORD = "";
+        private const string TARGET_IP = "";
+
         private Settings GetSettings()
         {
             return new Settings
             {
-                Hostname = "localhost",
-                Database = "test_db",
+                Hostname = SETTINGS_HOSTNAME,
+                Database = SETTINGS_DATABASE,
                 Port = "3306",
                 Username = "root",
-                Password = "n5o_admin"
+                Password = SETTINGS_PASSWORD
             };
         }
 
@@ -206,11 +211,11 @@ namespace PluginMySQLTest.Plugin
             {
                 SettingsJson = JsonConvert.SerializeObject(new Settings
                 {
-                    Hostname = "localhost",
-                    Database = "test_db",
+                    Hostname = SETTINGS_HOSTNAME,
+                    Database = SETTINGS_DATABASE,
                     Port = "3306",
                     Username = wrongUsername,
-                    Password = "n5o_admin"
+                    Password = SETTINGS_PASSWORD
                 }),
                 OauthConfiguration = new OAuthConfiguration(),
                 OauthStateJson = ""
@@ -222,7 +227,7 @@ namespace PluginMySQLTest.Plugin
             // assert
             Assert.IsType<ConnectResponse>(response);
             Assert.Equal("", response.SettingsError);
-            Assert.Equal($"Access denied for user '{wrongUsername}'@'172.17.0.1' (using password: YES)", response.ConnectionError);
+            Assert.Equal($"Access denied for user '{wrongUsername}'@'{TARGET_IP}' (using password: YES)", response.ConnectionError);
             Assert.Equal("", response.OauthError);
 
             // cleanup
@@ -263,9 +268,9 @@ namespace PluginMySQLTest.Plugin
             Assert.Equal(17, response.Schemas.Count);
 
             var schema = response.Schemas[0];
-            Assert.Equal($"`classicmodels`.`customers`", schema.Id);
+            Assert.Equal("`classicmodels`.`customers`", schema.Id);
             Assert.Equal("classicmodels.customers", schema.Name);
-            Assert.Equal($"", schema.Query);
+            Assert.Equal("", schema.Query);
             Assert.Equal(10, schema.Sample.Count);
             Assert.Equal(13, schema.Properties.Count);
 
@@ -316,9 +321,9 @@ namespace PluginMySQLTest.Plugin
             Assert.Single(response.Schemas);
 
             var schema = response.Schemas[0];
-            Assert.Equal($"`classicmodels`.`customers`", schema.Id);
+            Assert.Equal("`classicmodels`.`customers`", schema.Id);
             Assert.Equal("classicmodels.customers", schema.Name);
-            Assert.Equal($"", schema.Query);
+            Assert.Equal("", schema.Query);
             Assert.Equal(10, schema.Sample.Count);
             Assert.Equal(13, schema.Properties.Count);
 
@@ -369,9 +374,9 @@ namespace PluginMySQLTest.Plugin
             Assert.Single(response.Schemas);
 
             var schema = response.Schemas[0];
-            Assert.Equal($"test", schema.Id);
+            Assert.Equal("test", schema.Id);
             Assert.Equal("test", schema.Name);
-            Assert.Equal($"SELECT * FROM `classicmodels`.`customers`", schema.Query);
+            Assert.Equal("SELECT * FROM `classicmodels`.`customers`", schema.Query);
             Assert.Equal(10, schema.Sample.Count);
             Assert.Equal(13, schema.Properties.Count);
 
@@ -418,7 +423,7 @@ namespace PluginMySQLTest.Plugin
 
             try
             {
-                var response = client.DiscoverSchemas(request);
+                client.DiscoverSchemas(request);
             }
             catch (Exception e)
             {
@@ -492,9 +497,9 @@ namespace PluginMySQLTest.Plugin
             Assert.Equal("Carine", record["`contactFirstName`"]);
             Assert.Equal("40.32.2555", record["`phone`"]);
             Assert.Equal("54, rue Royale", record["`addressLine1`"]);
-            Assert.Equal("", record["`addressLine2`"]);
+            Assert.Null(record["`addressLine2`"]);
             Assert.Equal("Nantes", record["`city`"]);
-            Assert.Equal("", record["`state`"]);
+            Assert.Null(record["`state`"]);
             Assert.Equal("44000", record["`postalCode`"]);
             Assert.Equal("France", record["`country`"]);
             Assert.Equal((long) 1370, record["`salesRepEmployeeNumber`"]);
@@ -531,7 +536,7 @@ namespace PluginMySQLTest.Plugin
                 ToRefresh = {schema}
             };
 
-            var request = new ReadRequest()
+            var request = new ReadRequest
             {
                 DataVersions = new DataVersions
                 {
@@ -563,7 +568,7 @@ namespace PluginMySQLTest.Plugin
             Assert.Equal(DateTime.Parse("2003-01-13"), record["`requiredDate`"]);
             Assert.Equal(DateTime.Parse("2003-01-10"), record["`shippedDate`"]);
             Assert.Equal("Shipped", record["`status`"]);
-            Assert.Equal("", record["`comments`"]);
+            Assert.Null(record["`comments`"]);
             Assert.Equal((long) 363, record["`customerNumber`"]);
 
             // cleanup
@@ -721,22 +726,20 @@ namespace PluginMySQLTest.Plugin
                 }
             };
 
-            var records = new List<Record>()
+            var records = new List<Record>
             {
+                new Record
                 {
-                    new Record
+                    Action = Record.Types.Action.Upsert,
+                    CorrelationId = "test",
+                    RecordId = "record1",
+                    DataJson = $"{{\"Id\":1,\"Name\":\"Test Company\",\"DateTime\":\"{DateTime.Today}\",\"Date\":\"{DateTime.Now.Date}\",\"Time\":\"{DateTime.Now:hh:mm:ss}\",\"Decimal\":\"13.04\"}}",
+                    Versions =
                     {
-                        Action = Record.Types.Action.Upsert,
-                        CorrelationId = "test",
-                        RecordId = "record1",
-                        DataJson = $"{{\"Id\":1,\"Name\":\"Test Company\",\"DateTime\":\"{DateTime.Today}\",\"Date\":\"{DateTime.Now.Date}\",\"Time\":\"{DateTime.Now:hh:mm:ss}\",\"Decimal\":\"13.04\"}}",
-                        Versions =
+                        new RecordVersion
                         {
-                            new RecordVersion
-                            {
-                                RecordId = "version1",
-                                DataJson = $"{{\"Id\":1,\"Name\":\"Test Company\",\"DateTime\":\"{DateTime.Now}\",\"Date\":\"{DateTime.Now.Date}\",\"Time\":\"{DateTime.Now:hh:mm:ss}\",\"Decimal\":\"13.04\"}}",
-                            }
+                            RecordId = "version1",
+                            DataJson = $"{{\"Id\":1,\"Name\":\"Test Company\",\"DateTime\":\"{DateTime.Now}\",\"Date\":\"{DateTime.Now.Date}\",\"Time\":\"{DateTime.Now:hh:mm:ss}\",\"Decimal\":\"13.04\"}}",
                         }
                     }
                 }
@@ -802,21 +805,20 @@ namespace PluginMySQLTest.Plugin
                 {
                     DataJson = JsonConvert.SerializeObject(new ConfigureWriteFormData
                     {
-                        StoredProcedure = "`test`.`UpsertIntoTestTable`"
+                        StoredProcedure = "`test`.`UpsertIntoTestTable`",
+                        GoldenRecordIdParam = "U_ID"
                     })
                 }
             };
 
-            var records = new List<Record>()
+            var records = new List<Record>
             {
+                new Record
                 {
-                    new Record
-                    {
-                        Action = Record.Types.Action.Upsert,
-                        CorrelationId = "test",
-                        RecordId = "record1",
-                        DataJson = "{\"id\":\"1\",\"name\":\"Test First\"}",
-                    }
+                    Action = Record.Types.Action.Upsert,
+                    CorrelationId = "test",
+                    RecordId = "record1",
+                    DataJson = "{\"U_ID\":\"1\",\"U_NAME\":\"Test First\"}",
                 }
             };
 

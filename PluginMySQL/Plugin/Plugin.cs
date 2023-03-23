@@ -383,7 +383,7 @@ namespace PluginMySQL.Plugin
             try
             {
                 var errors = new List<string>();
-                if (! string.IsNullOrWhiteSpace(request.Form.DataJson))
+                if (!string.IsNullOrWhiteSpace(request.Form.DataJson))
                 {
                     // check for config errors
                     var replicationFormData = JsonConvert.DeserializeObject<ConfigureReplicationFormData>(request.Form.DataJson);
