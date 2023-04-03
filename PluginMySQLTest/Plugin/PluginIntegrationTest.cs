@@ -119,6 +119,56 @@ namespace PluginMySQLTest.Plugin
             };
         }
 
+        private Schema GetTestReplicationSchema2(string id = "test", string name = "test", string query = "")
+        {
+            return new Schema
+            {
+                Id = id,
+                Name = name,
+                Query = query,
+                Properties =
+                {
+                    new Property
+                    {
+                        Id = "Id",
+                        Name = "Id",
+                        Type = PropertyType.Integer,
+                        IsKey = true
+                    },
+                    new Property
+                    {
+                        Id = "Name",
+                        Name = "Name",
+                        Type = PropertyType.String
+                    },
+                    new Property
+                    {
+                        Id = "Email",
+                        Name = "Email",
+                        Type = PropertyType.String
+                    },
+                    new Property
+                    {
+                        Id = "Date",
+                        Name = "Date",
+                        Type = PropertyType.Date
+                    },
+                    new Property
+                    {
+                        Id = "Time",
+                        Name = "Time",
+                        Type = PropertyType.Time
+                    },
+                    new Property
+                    {
+                        Id = "Decimal",
+                        Name = "Decimal",
+                        Type = PropertyType.Decimal
+                    },
+                }
+            };
+        }
+        
         [Fact]
         public async Task ConnectSessionTest()
         {
@@ -781,6 +831,135 @@ namespace PluginMySQLTest.Plugin
             await server.ShutdownAsync();
         }
 
+            [Fact]
+        public async Task ReplicationEscapeWriteTest()
+        {
+            // setup
+            Server server = new Server
+            {
+                Services = {Publisher.BindService(new PluginMySQL.Plugin.Plugin())},
+                Ports = {new ServerPort("localhost", 0, ServerCredentials.Insecure)}
+            };
+            server.Start();
+
+            var port = server.Ports.First().BoundPort;
+
+            var channel = new Channel($"localhost:{port}", ChannelCredentials.Insecure);
+            var client = new Publisher.PublisherClient(channel);
+
+            var connectRequest = GetConnectSettings();
+
+            var prepareWriteRequest = new PrepareWriteRequest
+            {
+                Schema = GetTestReplicationSchema2("test2", "test2"),
+                CommitSlaSeconds = 1000,
+                Replication = new ReplicationWriteRequest
+                {
+                    SettingsJson = JsonConvert.SerializeObject(new ConfigureReplicationFormData
+                    {
+                        SchemaName = "test",
+                        GoldenTableName = "gr_test_escape",
+                        VersionTableName = "vr_test_escape"
+                    })
+                },
+                DataVersions = new DataVersions
+                {
+                    JobId = "jobUnitTest2",
+                    ShapeId = "shapeUnitTest2",
+                    JobDataVersion = 1,
+                    ShapeDataVersion = 1
+                }
+            };
+
+            var records = new List<Record>
+            {
+                new Record
+                {
+                    Action = Record.Types.Action.Upsert,
+                    CorrelationId = "test_escape",
+                    RecordId = "record1",
+                    DataJson = $"{{\"Id\":1,\"Name\":\"\\\\Test Company\\\\\",\"Email\":\"myjob@testcompany.com\",\"Date\":\"{DateTime.Now.Date}\",\"Time\":\"{DateTime.Now:hh:mm:ss}\",\"Decimal\":\"13.04\"}}",
+                    Versions =
+                    {
+                        new RecordVersion
+                        {
+                            RecordId = "version1",
+                            DataJson = $"{{\"Id\":1,\"Name\":\"\\\\Test Company\\\\\",\"Email\":\"myjob@testcompany.com\",\"Date\":\"{DateTime.Now.Date}\",\"Time\":\"{DateTime.Now:hh:mm:ss}\",\"Decimal\":\"13.04\"}}",
+                        }
+                    }
+                },
+                new Record
+                {
+                    Action = Record.Types.Action.Upsert,
+                    CorrelationId = "test_escape",
+                    RecordId = "record1",
+                    DataJson = $"{{\"Id\":2,\"Name\":\"\\\\\\\\\\\\Test Company\\\\\",\"Email\":\"myjob2@&testcompany.com\",\"Date\":\"{DateTime.Now.Date}\",\"Time\":\"{DateTime.Now:hh:mm:ss}\",\"Decimal\":\"13.04\"}}",
+                    Versions =
+                    {
+                        new RecordVersion
+                        {
+                            RecordId = "version1",
+                            DataJson = $"{{\"Id\":2,\"Name\":\"\\\\\\\\\\\\Test Company\\\\\",\"Email\":\"myjob2@&testcompany.com\",\"Date\":\"{DateTime.Now.Date}\",\"Time\":\"{DateTime.Now:hh:mm:ss}\",\"Decimal\":\"13.04\"}}",
+                        }
+                    }
+                },
+                new Record
+                {
+                    Action = Record.Types.Action.Upsert,
+                    CorrelationId = "test_escape",
+                    RecordId = "record1",
+                    DataJson = $"{{\"Id\":3,\"Name\":\"\\\\\\\\Test \\\\Company\\\\\",\"Email\":\"myjob3\\\\@test\'company.com\",\"Date\":\"{DateTime.Now.Date}\",\"Time\":\"{DateTime.Now:hh:mm:ss}\",\"Decimal\":\"13.04\"}}",
+                    Versions =
+                    {
+                        new RecordVersion
+                        {
+                            RecordId = "version1",
+                            DataJson = $"{{\"Id\":3,\"Name\":\"\\\\\\\\Test \\\\Company\\\\\",\"Email\":\"myjob3\\\\@test\'company.com\",\"Date\":\"{DateTime.Now.Date}\",\"Time\":\"{DateTime.Now:hh:mm:ss}\",\"Decimal\":\"13.04\"}}",
+                        }
+                    }
+                }
+            };
+
+            var recordAcks = new List<RecordAck>();
+
+            // act
+            client.Connect(connectRequest);
+            client.PrepareWrite(prepareWriteRequest);
+
+            using (var call = client.WriteStream())
+            {
+                var responseReaderTask = Task.Run(async () =>
+                {
+                    while (await call.ResponseStream.MoveNext())
+                    {
+                        var ack = call.ResponseStream.Current;
+                        recordAcks.Add(ack);
+                    }
+                });
+
+                foreach (Record record in records)
+                {
+                    await call.RequestStream.WriteAsync(record);
+                }
+
+                await call.RequestStream.CompleteAsync();
+                await responseReaderTask;
+            }
+
+            // assert
+            Assert.Equal(3, recordAcks.Count);
+            Assert.Empty(
+                recordAcks.Select(r => r.Error).Where(err => !string.IsNullOrWhiteSpace(err)).ToArray()
+            );
+            Assert.Empty(
+                recordAcks.Select(r => r.CorrelationId).Where(cId => cId != "test_escape").ToArray()
+            );
+
+            // cleanup
+            await channel.ShutdownAsync();
+            await server.ShutdownAsync();
+        }
+        
         [Fact]
         public async Task WriteTest()
         {

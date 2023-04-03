@@ -6,7 +6,6 @@ using Naveego.Sdk.Logging;
 using Newtonsoft.Json;
 using PluginMySQL.API.Factory;
 using PluginMySQL.DataContracts;
-using PluginMySQL.Helper;
 
 namespace PluginMySQL.API.Replication
 {
@@ -17,6 +16,12 @@ namespace PluginMySQL.API.Replication
             Dictionary<string, object> recordMap)
         {
             var conn = connFactory.GetConnection();
+            var escapeList = new []
+            {
+                ("\\", "\\\\"),
+                ("'", "\\'"),
+                ("@", "\\@")
+            };
             
             try
             {
@@ -93,7 +98,7 @@ namespace PluginMySQL.API.Replication
                             }
                             
                             querySb.Append(rawValue != null
-                                ? $"'{Utility.Utility.GetSafeString(rawValue.ToString(), ("'", "''"), ("\\", "\\\\"))}',"
+                                ? $"'{Utility.Utility.GetSafeString(rawValue.ToString(), escapeList)}',"
                                 : $"NULL,");
                         }
                         else
@@ -173,7 +178,7 @@ namespace PluginMySQL.API.Replication
                             }
 
                             querySb.Append(rawValue != null
-                                ? $"{Utility.Utility.GetSafeName(column.ColumnName)}='{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''")}',"
+                                ? $"{Utility.Utility.GetSafeName(column.ColumnName)}='{Utility.Utility.GetSafeString(rawValue.ToString(), escapeList)}',"
                                 : $"{Utility.Utility.GetSafeName(column.ColumnName)}=NULL,");
                             }
                             else
