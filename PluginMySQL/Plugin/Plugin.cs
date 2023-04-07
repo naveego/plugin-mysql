@@ -383,7 +383,7 @@ namespace PluginMySQL.Plugin
             try
             {
                 var errors = new List<string>();
-                if (! string.IsNullOrWhiteSpace(request.Form.DataJson))
+                if (!string.IsNullOrWhiteSpace(request.Form.DataJson))
                 {
                     // check for config errors
                     var replicationFormData = JsonConvert.DeserializeObject<ConfigureReplicationFormData>(request.Form.DataJson);
@@ -500,6 +500,7 @@ namespace PluginMySQL.Plugin
                         // send record to source system
                         // add await for unit testing 
                         // removed to allow multiple to run at the same time
+                        //await
                         Task.Run(async () => await Replication.WriteRecord(_connectionFactory, schema, record, config, responseStream), context.CancellationToken);
                     }
                     else
@@ -507,6 +508,7 @@ namespace PluginMySQL.Plugin
                         // send record to source system
                         // add await for unit testing 
                         // removed to allow multiple to run at the same time
+                        //await
                         Task.Run(async () =>
                                 await Write.WriteRecordAsync(_connectionFactory, schema, record, responseStream),
                             context.CancellationToken);
